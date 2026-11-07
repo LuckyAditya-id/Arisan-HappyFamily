@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happy Family · Kocokan Arisan</title>
+<style>
+  :root{
+    --bg:#f7f1e6; --card:#fffdf8; --ink:#23302b; --muted:#6f7b74; --line:#e5dccb;
+    --green:#1f6b56; --green-d:#15503f; --gold:#e0a33a; --red:#c8402f; --ok:#2e9e6e;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:460px;margin:0 auto;padding:16px 14px 40px}
+  header{text-align:center;padding:6px 0 12px;position:relative}
+  .mute{position:absolute;top:4px;right:0;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:18px;cursor:pointer}
+  header h1{margin:0;font-size:22px;letter-spacing:.2px}
+  header .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .badge-round{display:inline-block;background:var(--green);color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600;margin-top:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
+  .card h2{margin:0 0 10px;font-size:14px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+  .hide{display:none!important}
+  .notice{background:#fff4d9;border:1px solid #f0d58b;color:#6a5311;border-radius:12px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.45}
+  .notice.err{background:#fde5e1;border-color:#f1b3aa;color:#7a2418}
+
+  /* login */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pick{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 8px;font-size:16px;font-weight:600;color:var(--ink);cursor:pointer;text-align:center}
+  .pick small{display:block;font-weight:500;font-size:11px;color:var(--muted);margin-top:2px}
+  .pick:active{transform:scale(.97)}
+  .pick.won{background:#f3efe4}
+
+  /* wheel */
+  .wheelbox{display:flex;justify-content:center;position:relative}
+  canvas{display:block;max-width:100%}
+  .status{text-align:center;margin-top:6px;min-height:42px}
+  .status .big{font-size:17px;font-weight:700}
+  .status .small{font-size:13px;color:var(--muted);margin-top:2px}
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:700;color:#fff;background:var(--green);cursor:pointer;margin-top:10px}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.5}
+  .btn.ready-on{background:#fff;color:var(--green);border:2px solid var(--green)}
+  .btn.stop{background:var(--red);font-size:22px;padding:20px;animation:pulse 1s infinite}
+  .pick.sel{border-color:var(--green);background:#e8f6ee;box-shadow:inset 0 0 0 1px var(--green)}
+  .pick.sel small{color:var(--green-d)}
+  .btn.small{font-size:15px;padding:12px;margin-top:8px}
+  .rn{display:flex;gap:6px;align-items:center;margin-top:8px}
+  .rn:first-child{margin-top:0}
+  .rn input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:10px;font-size:16px;background:#fff;color:var(--ink)}
+  .rn button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;font-size:14px;background:var(--green);color:#fff;cursor:pointer}
+  .rn button.ghost{background:#efe8d8;color:var(--ink)}
+  .rn .lbl{font-size:11px;color:var(--muted);width:62px;flex:none;line-height:1.2}
+  .pay{background:#e8f6ee;border:1.5px solid var(--ok);border-radius:14px;padding:12px 14px;margin-top:10px;text-align:left}
+  .pay .t{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .pay .bank{font-size:15px;font-weight:700;margin-top:4px}
+  .pay .no{font-size:24px;font-weight:800;letter-spacing:1px;margin-top:2px;word-break:break-all}
+  .pay .own{font-size:14px;color:var(--ink)}
+  .pay button{margin-top:8px;border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:var(--green);color:#fff;font-size:14px;cursor:pointer}
+  .pay.none{background:#fff4d9;border-color:#f0d58b}
+  .ac{border:1.5px solid var(--line);border-radius:12px;padding:10px;margin-top:8px;background:#fff}
+  .ac:first-child{margin-top:0}
+  .ac .h{font-size:13px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between}
+  .ac .h span{font-weight:600;color:var(--ok)}
+  .ac input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px;font-size:16px;margin-top:6px;background:#fff;color:var(--ink)}
+  .ac button{width:100%;border:0;border-radius:10px;padding:11px;font-weight:700;font-size:14px;background:var(--green);color:#fff;margin-top:8px;cursor:pointer}
+  .vo{background:#f3efe4;border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted);margin-top:10px;line-height:1.4}
+  .hint{font-size:12px;color:var(--muted);margin:10px 2px 0;text-align:center}
+  .btn.next{background:var(--gold);color:#3a2a05}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,64,47,.55)}50%{box-shadow:0 0 0 12px rgba(200,64,47,0)}}
+
+  .winner{text-align:center;padding:6px 0 2px}
+  .winner .label{font-size:13px;color:var(--muted)}
+  .winner .name{font-size:34px;font-weight:800;color:var(--green-d);margin-top:2px}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:600}
+  .chip i{width:9px;height:9px;border-radius:50%;background:#cfc7b6;display:inline-block}
+  .chip.on{border-color:var(--ok);background:#e8f6ee}
+  .chip.on i{background:var(--ok)}
+  .chip.me{outline:2px solid var(--gold)}
+  .chip .t{font-size:11px}
+  ol.hist{margin:0;padding-left:20px;font-size:14px;line-height:1.7}
+  .me-line{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-top:14px}
+  .link{background:none;border:0;color:var(--green);font-weight:600;font-size:13px;cursor:pointer;padding:4px}
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+  <header>
+    <button class="mute" id="muteBtn" aria-label="Suara" title="Suara">🔊</button>
+    <h1>🎡 Kocokan Arisan</h1>
+    <div class="sub">Happy Family est 2011</div>
+    <div class="badge-round" id="roundBadge">Kocokan ke-4</div>
+  </header>
+
+  <div id="msg"></div>
+
+  <!-- pilih nama -->
+  <section class="card hide" id="loginCard">
+    <h2>Masuk sebagai siapa?</h2>
+    <div class="grid" id="loginGrid"></div>
+    <p class="hint">Boleh pilih lebih dari satu nama jika kamu memegang beberapa slot (mis. Yogi 1 &amp; Yogi 2).</p>
+    <button class="btn" id="enterBtn" disabled>Masuk</button>
+  </section>
+
+  <!-- aplikasi -->
+  <section id="app" class="hide">
+    <div class="card">
+      <div class="wheelbox"><canvas id="wheel"></canvas></div>
+      <div class="status" id="status"></div>
+      <div id="winnerBox" class="winner hide"></div>
+      <div id="payBox" class="hide"></div>
+      <div id="readyBtns"></div>
+      <button class="btn" id="mainBtn"></button>
+    </div>
+
+    <div class="card">
+      <h2 id="chipsTitle">Peserta</h2>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="card hide" id="acctCard">
+      <h2>Rekening saya (jika menang)</h2>
+      <div id="acctBox"></div>
+      <p class="hint" style="text-align:left">Rekening ini hanya ditampilkan ke semua peserta jika kamu menang. PIN dibuat saat pertama menyimpan dan dibutuhkan untuk mengubah rekening.</p>
+    </div>
+
+    <div class="card">
+      <h2>Nama di kocokan</h2>
+      <div id="renameBox"></div>
+      <p class="hint" style="text-align:left">Nama ini tampil di roda dan di layar semua peserta. Maks. 16 huruf.</p>
+    </div>
+
+    <div class="card">
+      <h2>Riwayat pemenang</h2>
+      <ol class="hist" id="hist"></ol>
+    </div>
+
+    <div class="me-line">
+      <span>Masuk sebagai <b id="meName"></b></span>
+      <button class="link" id="switchBtn">Ganti nama</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Data peserta ---------- */
+var PEOPLE = [
+  {id:"damara",  name:"Damara"},
+  {id:"pratiwi1",name:"Pratiwi 1"},
+  {id:"gilang1", name:"Gilang 1"},
+  {id:"lucky",   name:"Lucky"},
+  {id:"agit",    name:"Agit"},
+  {id:"yogi1",   name:"Yogi 1"},
+  {id:"yogi2",   name:"Yogi 2"},
+  {id:"pratiwi2",name:"Pratiwi 2"},
+  {id:"gilang2", name:"Gilang 2"}
+];
+var BASE = [ {round:1,id:"damara"}, {round:2,id:"pratiwi1"}, {round:3,id:"gilang1"} ];
+var FIRST_LIVE_ROUND = 4;
+var COLORS = ["#1f6b56","#b97f12","#c8553d","#3e7cb1","#8b5e9e","#4f8a5f","#d0697f","#6b7f3b","#b8702a"];
+
+var customNames = {}, accounts = {};
+function defName(id){ for(var i=0;i<PEOPLE.length;i++) if(PEOPLE[i].id===id) return PEOPLE[i].name; return id; }
+function nameOf(id){ return (typeof customNames[id]==="string" && customNames[id]) ? customNames[id] : defName(id); }
+function isPerson(id){ return PEOPLE.some(function(p){return p.id===id;}); }
+
+/* ---------- Penyimpanan lokal (hanya kenyamanan perangkat) ---------- */
+var mem = {};
+function lsGet(k, d){ try{ var v=localStorage.getItem(k); return v===null?(k in mem?mem[k]:d):v; }catch(e){ return k in mem?mem[k]:d; } }
+function lsSet(k, v){ mem[k]=String(v); try{ localStorage.setItem(k,v); }catch(e){} }
+function lsDel(k){ delete mem[k]; try{ localStorage.removeItem(k); }catch(e){} }
+
+/* ---------- State ---------- */
+var db = null, canWrite = true;
+var mine = [];
+try{ mine = JSON.parse(lsGet("arisan_mine","[]")).filter(isPerson); }catch(e){ mine=[]; }
+var sel = {};
+var renameSig = "", acctSig = "";
+var soundArmed = false, prevRound = null, prevReadyN = 0, prevAll = false;
+var dismissed = parseInt(lsGet("arisan_dismissed","3"),10) || 3;
+var readyDocs = {};          // docId -> data
+var roundDocs = {};          // docId -> data
+var loaded = {ready:false, rounds:false};
+var animateRounds = {};      // round -> true bila baru muncul pada sesi ini
+var animatedDone = {};       // round -> true bila animasi sudah dijalankan
+var busy = false;
+
+/* ---------- Turunan data ---------- */
+function derive(){
+  var fin = BASE.slice();
+  Object.keys(roundDocs).forEach(function(k){
+    var d = roundDocs[k];
+    if(d && typeof d.round==="number" && d.round>=FIRST_LIVE_ROUND && isPerson(d.winner)) fin.push({round:d.round,id:d.winner});
+  });
+  fin.sort(function(a,b){return a.round-b.round;});
+  var seen = {}, clean = [];
+  fin.forEach(function(f){ if(!seen[f.id]){ seen[f.id]=1; clean.push(f);} });
+  var last = clean.length ? clean[clean.length-1].round : 0;
+  return {finished:clean, last:last, current:last+1};
+}
+function winnersBefore(fin, r){ return fin.filter(function(f){return f.round<r;}).map(function(f){return f.id;}); }
+function eligibleFor(fin, r){ var w=winnersBefore(fin,r); return PEOPLE.filter(function(p){return w.indexOf(p.id)<0;}); }
+function eligIdsFor(fin, r){ return eligibleFor(fin, r).map(function(p){return p.id;}); }
+function readyList(round){
+  var out=[];
+  Object.keys(readyDocs).forEach(function(k){
+    var d=readyDocs[k];
+    if(d && d.round===round && isPerson(d.id)) out.push(d);
+  });
+  return out;
+}
+
+/* ---------- Efek suara (Web Audio, tanpa file) ---------- */
+var sfx = (function(){
+  var ctx=null, master=null, muted = lsGet("arisan_mute","0")==="1";
+  function ensure(){
+    if(ctx) return ctx;
+    try{ var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
+      ctx=new AC(); master=ctx.createGain(); master.gain.value=0.35; master.connect(ctx.destination);
+    }catch(e){ ctx=null; }
+    return ctx;
+  }
+  function unlock(){ var c=ensure(); if(c && c.state==="suspended"){ try{ c.resume(); }catch(e){} } }
+  function tone(freq,dur,type,vol,delay,slideTo){
+    if(muted) return; var c=ensure(); if(!c || c.state!=="running") return;
+    var t=c.currentTime+(delay||0), o=c.createOscillator(), g=c.createGain();
+    o.type=type||"sine"; o.frequency.setValueAtTime(freq,t);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.4,t+0.008); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.03);
+  }
+  var NOTE=function(semi){ return 261.63*Math.pow(2,semi/12); };
+  return {
+    unlock:unlock,
+    isMuted:function(){return muted;},
+    setMuted:function(v){ muted=!!v; lsSet("arisan_mute",muted?"1":"0"); },
+    click:function(){ tone(700,.05,"triangle",.25); },
+    tick:function(speed){ var f=900+Math.min(600,(speed||0)*0.9)+Math.random()*60; tone(f,.03,"square",.09); },
+    pop:function(n){ var f=NOTE(2*Math.min(n,12)); tone(f,.14,"sine",.45); tone(f*2,.1,"triangle",.15,.02); },
+    down:function(){ tone(330,.16,"sine",.3,0,200); },
+    alert:function(){ tone(NOTE(7),.16,"triangle",.4); tone(NOTE(12),.16,"triangle",.4,.15); tone(NOTE(16),.28,"triangle",.45,.3); },
+    whoosh:function(){ tone(900,.9,"sawtooth",.07,0,120); },
+    win:function(){ [0,4,7,12,16].forEach(function(n,i){ tone(NOTE(n),.28,"triangle",.4,i*.12); }); tone(NOTE(19),.9,"triangle",.4,.62); tone(NOTE(12),.9,"sine",.3,.62); }
+  };
+})();
+["pointerdown","keydown","touchstart"].forEach(function(ev){ document.addEventListener(ev,function(){ sfx.unlock(); },{passive:true}); });
+
+/* ---------- Roda ---------- */
+var wheel = (function(){
+  var cv = document.getElementById("wheel"), ctx = cv.getContext("2d");
+  var items=[], theta=0, speed=0, targetSpeed=0, mode="spin", hl=-1, size=300, dpr=1;
+  var sFrom=0, sD=0, sStart=0, sT=6500, onDone=null, last=0, lastIdx=null, onTick=null;
+
+  function resize(){
+    var w = cv.parentElement.clientWidth || 300;
+    size = Math.max(240, Math.min(w, 400));
+    dpr = window.devicePixelRatio || 1;
+    cv.style.width = size+"px"; cv.style.height = size+"px";
+    cv.width = Math.round(size*dpr); cv.height = Math.round(size*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function draw(){
+    ctx.clearRect(0,0,size,size);
+    var cx=size/2, cy=size/2+8, r=size/2-22, n=items.length;
+    if(n===0){ return; }
+    var seg=360/n, rad=Math.PI/180;
+    // bayangan
+    ctx.save(); ctx.shadowColor="rgba(0,0,0,.18)"; ctx.shadowBlur=14; ctx.shadowOffsetY=4;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill(); ctx.restore();
+    for(var i=0;i<n;i++){
+      var a0=(theta+i*seg-90)*rad, a1=a0+seg*rad;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a0,a1); ctx.closePath();
+      ctx.globalAlpha = (hl>=0 && hl!==i) ? .35 : 1;
+      ctx.fillStyle = COLORS[items[i].ci % COLORS.length]; ctx.fill();
+      ctx.lineWidth=2; ctx.strokeStyle="#fffdf8"; ctx.stroke();
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate((theta+(i+.5)*seg-90)*rad);
+      ctx.fillStyle="#fff"; ctx.textAlign="right"; ctx.textBaseline="middle";
+      var fs = Math.max(12, Math.min(20, size/(n>6?20:16)));
+      var maxW = r*0.84 - r*0.13;
+      ctx.font = "700 "+fs+"px system-ui,sans-serif";
+      while(fs>9 && ctx.measureText(items[i].name).width>maxW){ fs-=1; ctx.font = "700 "+fs+"px system-ui,sans-serif"; }
+      ctx.fillText(items[i].name, r-14, 0);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+    // hub
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.13,0,Math.PI*2); ctx.fillStyle="#fffdf8"; ctx.fill();
+    ctx.lineWidth=3; ctx.strokeStyle="#23302b"; ctx.stroke();
+    // penunjuk
+    ctx.beginPath(); ctx.moveTo(cx,cy-r+10); ctx.lineTo(cx-13,cy-r-16); ctx.lineTo(cx+13,cy-r-16); ctx.closePath();
+    ctx.fillStyle="#c8402f"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#fffdf8"; ctx.stroke();
+  }
+  function ease(t){ return 1-Math.pow(1-t,3); }
+  function frame(now){
+    var dt = last ? Math.min(.05,(now-last)/1000) : 0; last = now;
+    if(mode==="spin"){
+      speed += (targetSpeed-speed)*Math.min(1,dt*2.2);
+      theta = (theta + speed*dt) % 360;
+    } else if(mode==="stopping"){
+      var t = Math.min(1,(now-sStart)/sT);
+      theta = sFrom + sD*ease(t);
+      if(t>=1){ mode="stopped"; theta = theta%360; speed=0; var cb=onDone; onDone=null; if(cb) cb(); }
+    }
+    if(((mode==="spin" && speed>1) || mode==="stopping") && items.length>1){
+      var segd=360/items.length, ix=Math.floor((((-theta)%360)+360)%360/segd);
+      if(lastIdx!==null && ix!==lastIdx && onTick) onTick(mode==="stopping" ? 220 : speed);
+      lastIdx=ix;
+    } else { lastIdx=null; }
+    draw();
+    requestAnimationFrame(frame);
+  }
+  window.addEventListener("resize", resize);
+  resize(); requestAnimationFrame(frame);
+  return {
+    resize: resize,
+    setItems: function(list){
+      var key = list.map(function(p){return p.id+":"+p.name;}).join("|");
+      if(this._key===key) return; this._key=key;
+      items = list.map(function(p){ return {name:p.name, ci:PEOPLE.findIndex(function(q){return q.id===p.id;})}; });
+    },
+    spin: function(ts){ if(mode==="stopping") return; mode="spin"; hl=-1; targetSpeed=ts; },
+    snapTo: function(idx){ var n=items.length; if(!n) return; mode="stopped"; onDone=null; speed=0; theta = -((idx+.5)*(360/n)); hl=idx; },
+    stopTo: function(idx, cb){
+      var n=items.length; if(!n||idx<0){ if(cb) cb(); return; }
+      var seg=360/n, jitter=(Math.random()-.5)*seg*.6;
+      var targetMod=(((-(idx+.5)*seg+jitter)%360)+360)%360, curMod=((theta%360)+360)%360;
+      var delta=(targetMod-curMod+360)%360;
+      var minD=Math.max(720, speed*(sT/1000)/3);
+      var k=Math.max(0,Math.ceil((minD-delta)/360));
+      sFrom=theta; sD=delta+360*k; sStart=performance.now(); mode="stopping"; hl=-1; onDone=function(){ hl=idx; if(cb) cb(); };
+    },
+    setTick: function(fn){ onTick=fn; },
+    isStopping: function(){ return mode==="stopping"; },
+    mode: function(){ return mode; }
+  };
+})();
+
+wheel.setTick(function(sp){ sfx.tick(sp); });
+
+/* ---------- Konfeti ---------- */
+function confetti(){
+  var c=document.getElementById("confetti"), x=c.getContext("2d");
+  c.width=innerWidth; c.height=innerHeight;
+  var ps=[], cols=["#e0a33a","#1f6b56","#c8402f","#3e7cb1","#8b5e9e","#fff"];
+  for(var i=0;i<140;i++) ps.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*.4,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,s:5+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[i%cols.length]});
+  var t0=performance.now();
+  (function loop(now){
+    x.clearRect(0,0,c.width,c.height);
+    ps.forEach(function(p){ p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.fillStyle=p.c; x.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6); x.restore(); });
+    if(now-t0<4500) requestAnimationFrame(loop); else x.clearRect(0,0,c.width,c.height);
+  })(t0);
+}
+
+/* ---------- Elemen ---------- */
+var $ = function(id){return document.getElementById(id);};
+function esc(s){ return String(s).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch];}); }
+
+/* ---------- Render ---------- */
+function render(){
+  if(!db){ return; }
+  var D = derive();
+  var fin = D.finished;
+  var resultRound = (D.last>=FIRST_LIVE_ROUND && D.last>dismissed) ? D.last : null;
+  var shownRound = resultRound!==null ? resultRound : D.current;
+  var elig = eligibleFor(fin, shownRound);
+
+  $("roundBadge").textContent = elig.length===0 && resultRound===null ? "Arisan selesai" : "Kocokan ke-"+shownRound;
+
+  // login
+  if(!mine.length){
+    $("loginCard").classList.remove("hide"); $("app").classList.add("hide");
+    var wonIds = fin.map(function(f){return f.id;});
+    $("loginGrid").innerHTML = PEOPLE.map(function(p){
+      var won = wonIds.indexOf(p.id)>=0;
+      return '<button class="pick'+(won?' won':'')+(sel[p.id]?' sel':'')+'" data-id="'+p.id+'">'+(sel[p.id]?'✓ ':'')+esc(nameOf(p.id))+'<small>'+(nameOf(p.id)!==defName(p.id)?esc(defName(p.id))+' · ':'')+(won?'🏆 sudah menang':'belum menang')+'</small>'+'</button>';
+    }).join("");
+    var nsel=Object.keys(sel).filter(function(k){return sel[k];}).length;
+    $("enterBtn").disabled = nsel===0;
+    $("enterBtn").textContent = nsel>1 ? "Masuk ("+nsel+" nama)" : "Masuk";
+    return;
+  }
+  $("loginCard").classList.add("hide"); $("app").classList.remove("hide");
+  $("meName").textContent = mine.map(nameOf).join(" & ");
+  wheel.resize();
+
+  var readies = resultRound!==null ? [] : readyList(D.current);
+  var eIds = elig.map(function(p){return p.id;});
+  var readyIds = readies.map(function(d){return d.id;}).filter(function(i){return eIds.indexOf(i)>=0;});
+  var allReady = eIds.length>0 && eIds.every(function(i){return readyIds.indexOf(i)>=0;});
+  var mineElig = mine.filter(function(i){return eIds.indexOf(i)>=0;});
+  var notReadyMine = mineElig.filter(function(i){return readyIds.indexOf(i)<0;});
+  var pb = $("payBox"); pb.classList.add("hide"); pb.innerHTML="";
+  var rb = $("readyBtns"); rb.innerHTML="";
+  var wonIds2 = winnersBefore(fin, shownRound + (resultRound!==null?1:0));
+
+  // roda + status
+  wheel.setItems(elig.map(function(p){ return {id:p.id, name:nameOf(p.id)}; }));
+  var status=$("status"), wbox=$("winnerBox"), btn=$("mainBtn");
+  wbox.classList.add("hide"); btn.className="btn"; btn.disabled=false;
+
+  if(elig.length===0 && resultRound===null){
+    wheel.spin(0);
+    status.innerHTML='<div class="big">🎉 Semua peserta sudah menang</div><div class="small">Putaran arisan ini sudah selesai.</div>';
+    btn.classList.add("hide");
+  } else if(resultRound!==null){
+    btn.classList.remove("hide");
+    var rd = roundDocs["r"+resultRound];
+    var wid = (rd && isPerson(rd.winner)) ? rd.winner : null;
+    var widx = elig.findIndex(function(p){return p.id===wid;});
+    function showWinner(){
+      status.innerHTML='';
+      wbox.classList.remove("hide");
+      wbox.innerHTML='<div class="label">Pemenang kocokan ke-'+resultRound+'</div><div class="name">🏆 '+esc(nameOf(wid))+'</div>';
+      btn.textContent = "Lanjut ke kocokan ke-"+(resultRound+1);
+      btn.className="btn next"; btn.dataset.act="next"; btn.disabled=false;
+      var ac = accounts[wid];
+      pb.classList.remove("hide");
+      if(ac){
+        pb.innerHTML='<div class="pay"><div class="t">Transfer ke rekening '+esc(nameOf(wid))+'</div><div class="bank">'+esc(ac.bank)+'</div><div class="no">'+esc(ac.number)+'</div><div class="own">a.n. '+esc(ac.holder)+'</div><button data-copy="'+esc(ac.number)+'">Salin nomor</button></div>';
+      } else {
+        pb.innerHTML='<div class="pay none"><div class="t">Rekening tujuan</div><div class="own" style="margin-top:4px">'+(mine.indexOf(wid)>=0 ? 'Kamu belum mengisi rekening. Isi di kartu <b>Rekening saya</b> di bawah.' : esc(nameOf(wid))+' belum mengisi rekening. Minta dia mengisinya di halamannya.')+'</div></div>';
+      }
+    }
+    if(animateRounds[resultRound] && !animatedDone[resultRound]){
+      animatedDone[resultRound]=true;
+      status.innerHTML='<div class="big">Roda sedang melambat…</div><div class="small">Siapa ya yang beruntung?</div>';
+      btn.textContent="Mengocok…"; btn.disabled=true; btn.className="btn"; btn.dataset.act="";
+      sfx.whoosh();
+      wheel.stopTo(widx, function(){ showWinner(); confetti(); sfx.win(); });
+    } else if(wheel.isStopping()){
+      status.innerHTML='<div class="big">Roda sedang melambat…</div><div class="small">Siapa ya yang beruntung?</div>';
+      btn.textContent="Mengocok…"; btn.disabled=true; btn.dataset.act="";
+    } else {
+      wheel.snapTo(widx); showWinner();
+    }
+  } else {
+    // fase siap-siap
+    var n = readyIds.length, total = eIds.length;
+    if(soundArmed && prevRound===D.current){
+      if(n>prevReadyN) sfx.pop(n); else if(n<prevReadyN) sfx.down();
+      if(allReady && !prevAll) sfx.alert();
+    }
+    prevRound=D.current; prevReadyN=n; prevAll=allReady;
+    wheel.spin(n===0 ? 0 : 40 + n*55);
+    btn.dataset.act="";
+    if(allReady){
+      if(mineElig.length){
+        status.innerHTML='<div class="big">Semua sudah siap! 🔥</div><div class="small">Tekan STOP untuk menghentikan roda.</div>';
+        btn.textContent="⏹ STOP"; btn.className="btn stop"; btn.dataset.act="stop";
+      } else {
+        status.innerHTML='<div class="big">Semua sudah siap! 🔥</div><div class="small">Menunggu peserta menekan STOP…</div>';
+        btn.classList.add("hide");
+        rb.innerHTML='<div class="vo">Kamu sudah pernah menang, jadi hanya bisa melihat hasilnya.</div>';
+      }
+    } else if(!mineElig.length){
+      status.innerHTML='<div class="big">Siap: '+n+' dari '+total+'</div><div class="small">Roda berputar makin cepat tiap ada yang siap.</div>';
+      btn.classList.add("hide");
+      rb.innerHTML='<div class="vo">Kamu sudah pernah menang, jadi hanya bisa melihat hasilnya.</div>';
+    } else {
+      var waitN = total-n;
+      status.innerHTML='<div class="big">Siap: '+n+' dari '+total+'</div><div class="small">'+(notReadyMine.length ? 'Tekan <b>Ready</b> — roda berputar makin cepat tiap ada yang siap.' : 'Menunggu '+waitN+' peserta lagi… roda terus berputar.')+'</div>';
+      btn.classList.add("hide");
+      var multi = mineElig.length>1, html="";
+      if(mineElig.length>1 && notReadyMine.length>1) html+='<button class="btn" data-act="readyall">✋ Ready semua nama saya</button>';
+      mineElig.forEach(function(i){
+        var on = readyIds.indexOf(i)>=0, nm=esc(nameOf(i));
+        html+='<button class="btn'+(on?' ready-on':'')+(multi?' small':'')+'" data-act="'+(on?'unready':'ready')+'" data-id="'+i+'">'+(on?'Batal Ready'+(multi?' · '+nm:''):'✋ Ready'+(multi?' · '+nm:''))+'</button>';
+      });
+      rb.innerHTML=html;
+    }
+    if(!canWrite){ btn.disabled=true; }
+  }
+
+  if(resultRound!==null) prevRound=null;
+  if(loaded.ready) soundArmed=true;
+
+  // kartu rekening (hanya untuk nama yang belum menang)
+  var acctMine = resultRound!==null ? [] : mineElig;
+  var asig = acctMine.join(",")+"|"+JSON.stringify(acctMine.map(function(i){return accounts[i]||null;}));
+  $("acctCard").classList.toggle("hide", acctMine.length===0);
+  var ae0 = document.activeElement;
+  if(asig!==acctSig && !(ae0 && ae0.tagName==="INPUT")){
+    acctSig = asig;
+    $("acctBox").innerHTML = acctMine.map(function(i){
+      var a = accounts[i];
+      return '<div class="ac" data-id="'+i+'"><div class="h">'+esc(nameOf(i))+(a?'<span>✓ tersimpan</span>':'')+'</div>'
+        +'<input data-f="bank" placeholder="Bank / e-wallet (mis. BCA, DANA)" maxlength="24" value="'+esc(a?a.bank:"")+'">'
+        +'<input data-f="number" inputmode="numeric" placeholder="Nomor rekening" maxlength="30" value="'+esc(a?a.number:"")+'">'
+        +'<input data-f="holder" placeholder="Atas nama" maxlength="40" value="'+esc(a?a.holder:"")+'">'
+        +'<input data-f="pin" type="password" inputmode="numeric" placeholder="'+(a?'PIN kamu (untuk mengubah)':'Buat PIN 4–6 angka')+'" maxlength="6">'
+        +'<button data-ac="save">'+(a?'Perbarui rekening':'Simpan rekening')+'</button></div>';
+    }).join("");
+  }
+
+  // kartu ubah nama
+  var rsig = mine.join(",")+"|"+JSON.stringify(customNames);
+  var ae = document.activeElement;
+  if(rsig!==renameSig && !(ae && ae.tagName==="INPUT")){
+    renameSig = rsig;
+    $("renameBox").innerHTML = mine.map(function(i){
+      var cust = nameOf(i)!==defName(i);
+      return '<div class="rn" data-id="'+i+'"><span class="lbl">'+esc(defName(i))+'</span><input maxlength="16" placeholder="'+esc(defName(i))+'" value="'+esc(cust?nameOf(i):"")+'"><button data-rn="save">Simpan</button>'+(cust?'<button class="ghost" data-rn="reset">Reset</button>':'')+'</div>';
+    }).join("");
+  }
+
+  // chip peserta
+  $("chipsTitle").textContent = resultRound!==null ? "Peserta" : "Status ready ("+readyIds.length+"/"+eIds.length+")";
+  $("chips").innerHTML = PEOPLE.map(function(p){
+    var on = readyIds.indexOf(p.id)>=0, won = wonIds2.indexOf(p.id)>=0;
+    return '<div class="chip'+(on?' on':'')+(mine.indexOf(p.id)>=0?' me':'')+'"><i></i>'+esc(nameOf(p.id))+(won?' <span class="t">🏆</span>':'')+'</div>';
+  }).join("");
+
+  // riwayat
+  $("hist").innerHTML = fin.map(function(f){
+    return '<li>Kocokan ke-'+f.round+': <b>'+esc(nameOf(f.id))+'</b></li>';
+  }).join("") || '<li style="list-style:none;margin-left:-20px;color:var(--muted)">Belum ada</li>';
+
+  // pesan
+  var m="";
+  $("msg").innerHTML = m;
+}
+
+/* ---------- Aksi ---------- */
+function setBusy(v){ busy=v; }
+function fail(e){
+  setBusy(false);
+  var t = (e && e.user) ? e.message : "Koneksi bermasalah, coba lagi sebentar.";
+  $("msg").innerHTML = '<div class="notice err">'+t+'</div>';
+  errUntil = Date.now()+5000;
+  setTimeout(function(){ if($("msg").firstChild && $("msg").firstChild.className.indexOf("err")>=0) $("msg").innerHTML=""; },5000);
+}
+async function send(action,id,extra){
+  if(busy) return; setBusy(true);
+  try{
+    var r=await fetch("/api/arisan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({action:action,id:id},extra||{}))});
+    if(!r.ok){ var j={}; try{ j=await r.json(); }catch(_){} var er=new Error(j.error||("http "+r.status)); er.user=!!j.error; throw er; }
+    applyState(await r.json());
+  }catch(e){ return fail(e); }
+  setBusy(false);
+  return true;
+}
+function doStop(){
+  var D=derive(), e=eligIdsFor(D.finished,D.current), rd=readyList(D.current).map(function(d){return d.id;});
+  if(!e.length || !e.every(function(i){return rd.indexOf(i)>=0;})) return;
+  var who=mine.filter(function(i){return e.indexOf(i)>=0;})[0]; if(!who) return;
+  return send("stop",who);
+}
+async function doReadyAll(){
+  var D=derive(), ids=readyList(D.current).map(function(d){return d.id;}), e=eligIdsFor(D.finished,D.current);
+  for(var i=0;i<mine.length;i++){ if(e.indexOf(mine[i])>=0 && ids.indexOf(mine[i])<0){ await send("ready",mine[i]); } }
+}
+function doNext(){
+  var D=derive(); dismissed=D.last; lsSet("arisan_dismissed",String(dismissed)); render();
+}
+
+$("loginGrid").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-id]"); if(!b) return;
+  sel[b.dataset.id]=!sel[b.dataset.id]; render();
+});
+function paintMute(){ $("muteBtn").textContent = sfx.isMuted()?"🔇":"🔊"; }
+paintMute();
+$("muteBtn").addEventListener("click",function(){ sfx.unlock(); sfx.setMuted(!sfx.isMuted()); paintMute(); sfx.click(); });
+$("enterBtn").addEventListener("click",function(){ sfx.click();
+  mine=PEOPLE.filter(function(p){return sel[p.id];}).map(function(p){return p.id;});
+  if(!mine.length) return;
+  lsSet("arisan_mine",JSON.stringify(mine)); acctSig=""; renameSig=""; render(); poll();
+});
+$("switchBtn").addEventListener("click",function(){
+  renameSig=""; acctSig="";
+  sel={}; mine.forEach(function(i){sel[i]=true;}); mine=[]; lsDel("arisan_mine"); render();
+});
+$("acctBox").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-ac]"); if(!b) return;
+  var row=b.closest(".ac"), id=row.dataset.id, g=function(f){return row.querySelector('[data-f="'+f+'"]').value;};
+  send("account",id,{bank:g("bank"),number:g("number"),holder:g("holder"),pin:g("pin")}).then(function(ok){
+    if(ok){ acctSig=""; render(); $("msg").innerHTML='<div class="notice">Rekening tersimpan ✓</div>'; errUntil=Date.now()+2500; setTimeout(function(){ if(Date.now()>=errUntil) $("msg").innerHTML=""; },2600); }
+  });
+});
+$("payBox").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-copy]"); if(!b) return;
+  var t=b.dataset.copy, old=b.textContent;
+  function done(ok){ b.textContent = ok?"Tersalin ✓":"Salin manual ya"; setTimeout(function(){ b.textContent=old; },1800); }
+  try{ navigator.clipboard.writeText(t).then(function(){done(true);},function(){done(false);}); }catch(e){ done(false); }
+});
+$("renameBox").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-rn]"); if(!b) return;
+  var row=b.closest(".rn"), id=row.dataset.id, inp=row.querySelector("input");
+  var val = b.dataset.rn==="reset" ? "" : inp.value;
+  send("rename",id,{name:val}).then(function(ok){ if(ok){ renameSig=""; render(); } });
+});
+$("renameBox").addEventListener("keydown",function(ev){
+  if(ev.key==="Enter"){ var row=ev.target.closest(".rn"); if(row) row.querySelector('[data-rn="save"]').click(); }
+});
+$("readyBtns").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-act]"); if(!b) return;
+  var a=b.dataset.act;
+  if(a==="readyall") doReadyAll(); else if(a==="ready"||a==="unready") send(a,b.dataset.id);
+});
+$("mainBtn").addEventListener("click",function(){
+  var a=this.dataset.act;
+  if(a==="stop") doStop(); else if(a==="next") doNext();
+});
+
+/* ---------- Mulai ---------- */
+function showLoading(){ $("msg").innerHTML='<div class="notice">Menyambungkan ke data arisan…</div>'; }
+var lastV=-1, polling=false, failCount=0, errUntil=0;
+function applyState(st){
+  if(!st || typeof st.v!=="number" || st.v<lastV) return;   // abaikan data yang lebih lama
+  lastV=st.v; failCount=0;
+  var m=st.rounds||{};
+  if(loaded.rounds){ Object.keys(m).forEach(function(k){ if(!roundDocs[k] && m[k] && typeof m[k].round==="number") animateRounds[m[k].round]=true; }); }
+  customNames=st.names||{}; accounts=st.accounts||{}; readyDocs=st.ready||{}; roundDocs=m; loaded.ready=true; loaded.rounds=true;
+  if(Date.now()>errUntil) $("msg").innerHTML=""; render();
+}
+async function poll(){
+  if(polling) return; polling=true;
+  try{
+    var r=await fetch("/api/arisan?me="+encodeURIComponent(mine.join(",")),{cache:"no-store"});
+    if(!r.ok) throw new Error("http "+r.status);
+    applyState(await r.json());
+  }catch(e){
+    failCount++;
+    if(failCount>=3) $("msg").innerHTML='<div class="notice err">Tidak bisa menghubungi server. Data yang tampil mungkin belum terbaru.</div>';
+  }
+  polling=false;
+}
+function init(){
+  db = true;           // penanda: aplikasi aktif
+  showLoading();
+  poll();
+  setInterval(poll, 1500);
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) poll(); });
+}
+init();
+})();
+</script>
+</body>
+</html>
